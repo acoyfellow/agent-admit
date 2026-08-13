@@ -1,0 +1,16 @@
+{
+  "publicHosts": [
+    "registry.npmjs.org",
+    "registry.yarnpkg.com",
+    "registry.npmmirror.com",
+    "npm.pkg.github.com",
+    "codeload.github.com",
+    "github.com",
+    "api.github.com",
+    "objects.githubusercontent.com",
+    "gitlab.com",
+    "bitbucket.org"
+  ],
+  "suspiciousHostContains": [".corp."],
+  "suspiciousHostSuffixes": [".internal", ".local"]
+}

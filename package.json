@@ -1,0 +1,20 @@
+{
+  "name": "agent-admit",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "The model proposes an action. This package decides if it runs.",
+  "license": "MIT",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test src/*.test.ts",
+    "admit": "node --experimental-strip-types src/cli.ts"
+  },
+  "engines": {
+    "node": ">=22.6"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "typescript": "^5.8.0"
+  }
+}
