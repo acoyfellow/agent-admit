@@ -1,0 +1,19 @@
+package-lock.json
+  s_4667e7f6e7a043::t_5f3ffcb44f3bc5 1-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "e8b12e8c92a82fb5f0d2f9f5fc473c0eb0c37524",
+  "prompts": {},
+  "sessions": {
+    "s_4667e7f6e7a043": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "019fd3e5-115f-7258-bf75-ed9feae57a66",
+        "model": "grok-4.6"
+      },
+      "human_author": "Jordan Coeyman <jcoeyman@cloudflare.com>"
+    }
+  }
+}
