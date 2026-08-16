@@ -1,8 +1,8 @@
 # agent-admit
 
-A function. You pass an action. It returns yes or no. If no, you do not run the action.
+I told agents not to write `.env`. They wrote `.env`.
 
-Clone this repo. Do not publish it to npm.
+`admit` is a function. You give it a proposed `write`, `edit`, `bash`, or `lockfile` action. It returns `{ allow, reason }`. If `allow` is false, do not run the action.
 
 ```sh
 git clone https://github.com/acoyfellow/agent-admit
@@ -14,19 +14,17 @@ sh demo/show.sh
 
 `demo/show.sh` prints one allow (`ls`) and one deny (write `.env`).
 
-## Three hosts, one file
+## How it is wired
 
-The same `admit.wasm` is the judge in three places:
+Pi, the git hook, and `npm run eval` all load `target/wasm32-unknown-unknown/release/admit.wasm` and call `admit_json`.
 
-- **Pi** — `extension/` instantiates the wasm and calls `admit_json`
-- **Git** — `hooks/pre-commit` loads that same file
-- **Eval / CI** — `npm run eval` and `.github/workflows/eval.yml`
+`eval/verify-one-judge.mjs` hashes that file on each of those three paths. The script fails if the hashes differ. A throwaway git repo that stages `.env` must also fail the hook.
 
-If the hashes differ, `eval/verify-one-judge.mjs` fails.
+TypeScript in `src/admit.ts` is the reference implementation. Rust in `crates/admit` is the compiled copy. The eval suite requires them to agree on both `allow` and `reason` for every case in `eval/corpus.json`. A no-op that always allows would pass the deny cases. The suite treats that as failure.
 
-## What it is not
+## What still writes
 
-This is not a sandbox. A process with a shell can still write files in ways the judge does not see. `git hash-object` is one example. The suite records those holes. It does not claim they are closed.
+The scanner looks at the action text before the command runs. `eval "echo FOO=1 > ./.env"` is denied because `.env` is still in the string. `git hash-object -w --stdin` does not name `.env`, so `admit` allows it. Those cases live in `eval/bypasses.json`.
 
 ## Check
 
@@ -37,6 +35,8 @@ npm run eval
 node --experimental-strip-types eval/verify-one-judge.mjs
 sh demo/show.sh
 ```
+
+GitHub Actions runs the same commands on push to `main`.
 
 ## License
 
