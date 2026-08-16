@@ -1,0 +1,30 @@
+{
+  "note": "These are not suite failures. They record known holes. A deny here is extra credit. An allow is the documented limitation.",
+  "cases": [
+    {
+      "name": "eval-redirect",
+      "claimed": false,
+      "action": { "kind": "bash", "command": "eval \"echo FOO=1 > ./.env\"" }
+    },
+    {
+      "name": "variable-indirection",
+      "claimed": false,
+      "action": { "kind": "bash", "command": "p=./.env; echo FOO=1 > \"$p\"" }
+    },
+    {
+      "name": "hash-object-plumbing",
+      "claimed": false,
+      "action": { "kind": "bash", "command": "git hash-object -w --stdin" }
+    },
+    {
+      "name": "base64-payload",
+      "claimed": false,
+      "action": { "kind": "bash", "command": "echo Rk9PPTENCg== | base64 -d > ./.env" }
+    },
+    {
+      "name": "python-bytes-token",
+      "claimed": false,
+      "action": { "kind": "write", "path": "src/a.ts", "content": "const k = Buffer.from('c2steHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4','base64').toString()" }
+    }
+  ]
+}

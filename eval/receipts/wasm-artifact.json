@@ -1,0 +1,286 @@
+{
+  "id": "wasm-artifact",
+  "kind": "mechanical-gate",
+  "claim": "The wasm module decides every corpus case with the same allow and reason as native Rust.",
+  "verified": "wasm decided 29 cases (1738709 bytes). allow and reason matched native Rust.",
+  "projected": "A host can evaluate the same kernel without spawning a native binary.",
+  "realized": "",
+  "ok": true,
+  "wasm": {
+    "ok": true,
+    "reason": "decided",
+    "bytes": 1738709,
+    "exports": [
+      "memory",
+      "admit_alloc",
+      "admit_free",
+      "admit_json"
+    ],
+    "decided": 29,
+    "failed": 0,
+    "rows": [
+      {
+        "name": "ls",
+        "expect": true,
+        "wasmAllow": true,
+        "wasmReason": "bash allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "git-status",
+        "expect": true,
+        "wasmAllow": true,
+        "wasmReason": "bash allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "ordinary-write",
+        "expect": true,
+        "wasmAllow": true,
+        "wasmReason": "write allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "ordinary-edit",
+        "expect": true,
+        "wasmAllow": true,
+        "wasmReason": "edit allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "ordinary-tee",
+        "expect": true,
+        "wasmAllow": true,
+        "wasmReason": "bash allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "ordinary-redirect",
+        "expect": true,
+        "wasmAllow": true,
+        "wasmReason": "bash allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "lockfile-npm-uppercase",
+        "expect": true,
+        "wasmAllow": true,
+        "wasmReason": "lockfile allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "commit-no-verify",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "git commit with hooks disabled is not allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "force-push-main",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "git push --force to main is not allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "write-env",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "refuse to write secret-shaped path ./.env",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "edit-env",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "refuse to write secret-shaped path ./.env",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "write-dev-vars",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "refuse to write secret-shaped path .dev.vars",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "write-npmrc",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "refuse to write secret-shaped path pkg/.npmrc",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "redirect-env",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "refuse to write secret-shaped path ./.env",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "append-env",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "refuse to write secret-shaped path ./.env",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "tee-env",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "refuse to write secret-shaped path ./.env",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "cp-env",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "refuse to write secret-shaped path ./.env",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "mv-env",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "refuse to write secret-shaped path ./.env",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "dd-env",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "refuse to write secret-shaped path .env",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "bash-c-env",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "refuse to write secret-shaped path ./.env",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "sh-c-env",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "refuse to write secret-shaped path ./.env",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "zsh-c-env",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "refuse to write secret-shaped path ./.env",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "env-tee",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "refuse to write secret-shaped path ./.env",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "env-assign-tee",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "refuse to write secret-shaped path ./.env",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "python-open-env",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "refuse to write secret-shaped path .env",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "node-write-env",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "refuse to write secret-shaped path .env",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "sk-token",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "secret-shaped token in write payload",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "eval-redirect",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "refuse to write secret-shaped path ./.env",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "lockfile-corp",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "lockfile has 1 host(s) not on the public list",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      }
+    ]
+  },
+  "at": "2026-08-16T15:53:42.359Z"
+}

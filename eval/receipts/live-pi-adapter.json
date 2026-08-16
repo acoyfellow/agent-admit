@@ -1,0 +1,10 @@
+{
+  "id": "live-pi-adapter",
+  "kind": "verified-disproved",
+  "claim": "A live interactive Pi session used the new kernel adapter and blocked a write.",
+  "kill": "no live TUI session in this terraloop; mechanical adapter test is not a live session",
+  "verified": "Killed as live-session proof. extension/load.test.ts proves loadAdmit() spawns target/debug/admit json, fails closed if missing, allows ls, denies ./.env. That is adapter proof, not a human Pi TUI. Claiming a live session would be a lie.",
+  "projected": "Start Pi with -e extension/index.ts and ADMIT_KERNEL set; ask it to write ./.env; keep the block receipt.",
+  "realized": "",
+  "ok": true
+}

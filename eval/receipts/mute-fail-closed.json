@@ -1,0 +1,17 @@
+{
+  "id": "mute-fail-closed",
+  "kind": "mechanical-gate",
+  "claim": "If the admit module cannot load, the loader reports ok:false so a host can refuse every tool.",
+  "verified": "Missing module failed closed. Present module loaded admit().",
+  "projected": "Pi extension continues to block all tools when src/admit.ts is moved aside.",
+  "realized": "",
+  "ok": true,
+  "mute": {
+    "missingOk": true,
+    "presentOk": true,
+    "kernel": "admit.wasm",
+    "usesTsModule": false,
+    "muteHolds": true
+  },
+  "at": "2026-08-16T15:53:42.359Z"
+}

@@ -1,0 +1,21 @@
+[package]
+name = "admit"
+version = "0.0.1"
+edition = "2021"
+license = "MIT"
+description = "The model proposes an action. This crate decides if it runs."
+publish = false
+
+[lib]
+crate-type = ["rlib", "cdylib"]
+
+[[bin]]
+name = "admit"
+path = "src/main.rs"
+
+[dependencies]
+regex = "1.11.1"
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+sha2 = "0.10.9"
+url = "2.5.4"

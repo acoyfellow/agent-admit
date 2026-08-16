@@ -7,8 +7,10 @@
   "license": "MIT",
   "scripts": {
     "check": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test src/*.test.ts",
-    "admit": "node --experimental-strip-types src/cli.ts"
+    "test": "node --experimental-strip-types --test src/*.test.ts extension/*.test.ts",
+    "admit": "node --experimental-strip-types src/cli.ts",
+    "test:rust": "cargo test --manifest-path Cargo.toml",
+    "eval": "sh scripts/eval.sh"
   },
   "engines": {
     "node": ">=22.6"

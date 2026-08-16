@@ -1,0 +1,10 @@
+{
+  "id": "bypass-holes",
+  "kind": "verified-disproved",
+  "claim": "Pre-expansion inspection does not catch every write. eval-redirect and hash-object remain open.",
+  "kill": "not a kill of the holes; the unproven item was 'we have not recorded them'. They are recorded.",
+  "verified": "eval/bypasses.json replayed by npm run eval. known-bypasses.json: extraCreditDenies 3 of 5. Still allow: eval \"echo FOO=1 > ./.env\" and git hash-object -w --stdin. Claim that inspection is complete is false. Claim that holes are inventoried is true.",
+  "projected": "tree-sitter-bash or a sandbox closes the two open holes without changing admit() API.",
+  "realized": "",
+  "ok": true
+}

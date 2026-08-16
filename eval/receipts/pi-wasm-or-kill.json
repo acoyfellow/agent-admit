@@ -1,0 +1,10 @@
+{
+  "id": "pi-wasm-or-kill",
+  "kind": "verified-disproved",
+  "claim": "The Pi extension decides tools by instantiating admit.wasm admit_json.",
+  "kill": "extension uses native admit json only; wasm is eval-only",
+  "verified": "Killed. extension/load.ts resolveKernelPath() returns target/debug/admit or ADMIT_KERNEL. grep of extension/ has no admit_json and no WebAssembly.instantiate. eval/run.mjs does instantiate wasm and decided 28 cases. Two hosts, not one.",
+  "projected": "loadAdmit can try wasm first, then native. New test must fail if WebAssembly is absent from the decision path.",
+  "realized": "",
+  "ok": true
+}

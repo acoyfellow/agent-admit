@@ -1,23 +1,27 @@
-import { admitCommand } from "./command.ts";
+import { admitCommand, extractBashTargetPaths } from "./command.ts";
 import { admitLockfile } from "./lockfile.ts";
 import type { Action, Decision } from "./types.ts";
 
 export function admit(action: Action): Decision {
   if (action.kind === "bash") {
-    return admitCommand({ kind: "bash", text: action.command });
+    return admitCommand({
+      kind: "bash",
+      text: action.command,
+      targetPaths: extractBashTargetPaths(action.command),
+    });
   }
   if (action.kind === "write") {
     return admitCommand({
       kind: "write",
-      path: action.path,
       text: action.content,
+      targetPaths: [action.path],
     });
   }
   if (action.kind === "edit") {
     return admitCommand({
       kind: "edit",
-      path: action.path,
       text: action.payload,
+      targetPaths: [action.path],
     });
   }
   const result = admitLockfile(action.text, action.policyJson);

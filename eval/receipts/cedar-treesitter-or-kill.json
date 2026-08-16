@@ -1,0 +1,10 @@
+{
+  "id": "cedar-treesitter-or-kill",
+  "kind": "verified-disproved",
+  "claim": "This tree contains a Cedar policy file and a tree-sitter inspector used by admit().",
+  "kill": "neither Cedar nor tree-sitter is a dependency or source file in agent-admit",
+  "verified": "Killed. Cargo.toml depends on regex, serde, serde_json, sha2, url only. No cedar-policy crate. No tree-sitter crate. No .cedar file. Content rules are regex. Action rules are a hand lexer in command.rs. Adding a crate without a corpus slice would be theater.",
+  "projected": "A later loop can add cedar-policy for path/principal and tree-sitter-bash for eval/redirect, with new corpus cases.",
+  "realized": "",
+  "ok": true
+}

@@ -1,0 +1,38 @@
+{
+  "policy": {
+    "publicHosts": ["registry.npmjs.org"],
+    "suspiciousHostContains": [".corp."],
+    "suspiciousHostSuffixes": [".internal"]
+  },
+  "cases": [
+    { "name": "ls", "expect": true, "reasonContains": "allowed", "action": { "kind": "bash", "command": "ls -la" } },
+    { "name": "git-status", "expect": true, "reasonContains": "allowed", "action": { "kind": "bash", "command": "git status" } },
+    { "name": "ordinary-write", "expect": true, "reasonContains": "allowed", "action": { "kind": "write", "path": "src/hello.ts", "content": "export {}" } },
+    { "name": "ordinary-edit", "expect": true, "reasonContains": "allowed", "action": { "kind": "edit", "path": "src/output.ts", "payload": "export const x = 1" } },
+    { "name": "ordinary-tee", "expect": true, "reasonContains": "allowed", "action": { "kind": "bash", "command": "tee build.log" } },
+    { "name": "ordinary-redirect", "expect": true, "reasonContains": "allowed", "action": { "kind": "bash", "command": "echo hello > output.txt" } },
+    { "name": "lockfile-npm-uppercase", "expect": true, "reasonContains": "lockfile allowed", "action": { "kind": "lockfile", "text": "\"HTTPS://REGISTRY.NPMJS.ORG/a/-/a-1.0.0.tgz\"", "policyJson": "__POLICY__" } },
+    { "name": "commit-no-verify", "expect": false, "reasonContains": "hooks disabled", "action": { "kind": "bash", "command": "git commit --no-verify -m x" } },
+    { "name": "force-push-main", "expect": false, "reasonContains": "force", "action": { "kind": "bash", "command": "git push --force origin main" } },
+    { "name": "write-env", "expect": false, "reasonContains": "secret-shaped path", "action": { "kind": "write", "path": "./.env", "content": "FOO=1" } },
+    { "name": "edit-env", "expect": false, "reasonContains": "secret-shaped path", "action": { "kind": "edit", "path": "./.env", "payload": "FOO=1" } },
+    { "name": "write-dev-vars", "expect": false, "reasonContains": "secret-shaped path", "action": { "kind": "write", "path": ".dev.vars", "content": "X=1" } },
+    { "name": "write-npmrc", "expect": false, "reasonContains": "secret-shaped path", "action": { "kind": "write", "path": "pkg/.npmrc", "content": "//registry=_authToken=x" } },
+    { "name": "redirect-env", "expect": false, "reasonContains": "secret-shaped path", "action": { "kind": "bash", "command": "printf 'FOO=1\\n' > \"./.env\"" } },
+    { "name": "append-env", "expect": false, "reasonContains": "secret-shaped path", "action": { "kind": "bash", "command": "echo FOO=1 >> './.env'" } },
+    { "name": "tee-env", "expect": false, "reasonContains": "secret-shaped path", "action": { "kind": "bash", "command": "printf FOO=1 | tee -- \"./.env\"" } },
+    { "name": "cp-env", "expect": false, "reasonContains": "secret-shaped path", "action": { "kind": "bash", "command": "cp source \"./.env\"" } },
+    { "name": "mv-env", "expect": false, "reasonContains": "secret-shaped path", "action": { "kind": "bash", "command": "mv source './.env'" } },
+    { "name": "dd-env", "expect": false, "reasonContains": "secret-shaped path", "action": { "kind": "bash", "command": "dd if=foo of=.env" } },
+    { "name": "bash-c-env", "expect": false, "reasonContains": "secret-shaped path", "action": { "kind": "bash", "command": "bash -c \"printf 'FOO=1\\n' > ./.env\"" } },
+    { "name": "sh-c-env", "expect": false, "reasonContains": "secret-shaped path", "action": { "kind": "bash", "command": "sh -c 'printf x > ./.env'" } },
+    { "name": "zsh-c-env", "expect": false, "reasonContains": "secret-shaped path", "action": { "kind": "bash", "command": "zsh -c 'printf x > ./.env'" } },
+    { "name": "env-tee", "expect": false, "reasonContains": "secret-shaped path", "action": { "kind": "bash", "command": "env tee ./.env" } },
+    { "name": "env-assign-tee", "expect": false, "reasonContains": "secret-shaped path", "action": { "kind": "bash", "command": "env MODE=test tee ./.env" } },
+    { "name": "python-open-env", "expect": false, "reasonContains": "secret-shaped path", "action": { "kind": "bash", "command": "python -c \"open('.env','w').write('x')\"" } },
+    { "name": "node-write-env", "expect": false, "reasonContains": "secret-shaped path", "action": { "kind": "bash", "command": "node -e \"require('fs').writeFileSync('.env','x')\"" } },
+    { "name": "sk-token", "expect": false, "reasonContains": "secret-shaped token", "action": { "kind": "write", "path": "src/a.ts", "content": "const k=\"sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxx\"" } },
+    { "name": "eval-redirect", "expect": false, "reasonContains": "secret-shaped path", "action": { "kind": "bash", "command": "eval \"echo FOO=1 > ./.env\"" } },
+    { "name": "lockfile-corp", "expect": false, "reasonContains": "not on the public list", "action": { "kind": "lockfile", "text": "\"HTTPS://NPM.CORP.ACME.EXAMPLE/foo/-/foo-1.0.0.tgz\"", "policyJson": "__POLICY__" } }
+  ]
+}
