@@ -1,0 +1,71 @@
+.github/workflows/check.yml
+  s_6ce451eca6bd37::t_ca8efd518ef7a6 16-18,23-29
+.github/workflows/eval.yml
+  s_6ce451eca6bd37::t_94e42be6b5021e 1-29
+.gitignore
+  s_6ce451eca6bd37::t_67bd283961da82 3-5
+.guardrailignore
+  s_6ce451eca6bd37::t_2dbb0b6b690b56 1-5
+Cargo.lock
+  s_6ce451eca6bd37::t_a92a71903a0995 1-521
+INSTALL.md
+  s_6ce451eca6bd37::t_0182a4e31ffeb3 1-61
+crates/admit/src/lockfile.rs
+  s_6ce451eca6bd37::t_6512ac239c53fc 1-136
+crates/admit/src/main.rs
+  s_6ce451eca6bd37::t_7619c94613eb53 1-54
+demo/show.sh
+  s_6ce451eca6bd37::t_b1c7537a17462f 1-18
+eval/corpus.json
+  s_952b167abec97a::t_34c03454a45872 1-38
+eval/receipts/known-bypasses.json
+  s_6ce451eca6bd37::t_cad6fc79c80435 1-57
+eval/receipts/lockstep-negative-control.json
+  s_6ce451eca6bd37::t_67f81d37563a3c 1-365
+eval/receipts/mute-fail-closed.json
+  s_6ce451eca6bd37::t_8ebeb7c121d69a 1-17
+eval/receipts/wasm-artifact.json
+  s_6ce451eca6bd37::t_622c2550c97df1 1-286
+eval/run.mjs
+  s_6ce451eca6bd37::t_d34191c9225e56 1-288
+hooks/pre-commit
+  s_952b167abec97a::t_2b7f949789bb03 1-4
+hooks/pre-commit.mjs
+  s_952b167abec97a::t_e2c94ec1b1d4ce 1-42
+scripts/eval.sh
+  s_6ce451eca6bd37::t_d1344b0c3d0924 1-10
+src/command.ts
+  s_612b5c736dcff0::t_7336208cf43b2b 4,16,18-137,139-231,234-238,241-255,257-259
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "08077f2c4a7d35d816bce14949ced07d85ebc635",
+  "prompts": {},
+  "sessions": {
+    "s_612b5c736dcff0": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "019fd694-c515-748e-ac57-3546b0458143",
+        "model": "grok-4.6"
+      },
+      "human_author": "Jordan Coeyman <jcoeyman@cloudflare.com>"
+    },
+    "s_6ce451eca6bd37": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0015e-403a-7bc1-b35a-b1a11daa0c77",
+        "model": "grok-4.6"
+      },
+      "human_author": "Jordan Coeyman <jcoeyman@cloudflare.com>"
+    },
+    "s_952b167abec97a": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "019fd391-aa11-7719-9c9c-d9bc68c3f904",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Jordan Coeyman <jcoeyman@cloudflare.com>"
+    }
+  }
+}
