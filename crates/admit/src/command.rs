@@ -1,4 +1,5 @@
 use crate::Decision;
+use base64::prelude::{Engine as _, BASE64_STANDARD};
 use regex::Regex;
 use std::sync::OnceLock;
 
@@ -30,12 +31,27 @@ fn secret_patterns() -> &'static [Regex] {
 
 fn secret_paths() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| Regex::new(r"(?i)(^|/)(\.env(\.[^/]+)?|\.dev\.vars(\.[^/]+)?|\.npmrc)$").expect("paths"))
+    RE.get_or_init(|| {
+        Regex::new(r"(?i)(^|/)(\.env(\.[^/]+)?|\.dev\.vars(\.[^/]+)?|\.npmrc)$").expect("paths")
+    })
 }
 
 fn path_shaped_parts() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
     RE.get_or_init(|| Regex::new(r"[A-Za-z0-9_./~-]+").expect("parts"))
+}
+
+fn base64_parts() -> &'static Regex {
+    static RE: OnceLock<Regex> = OnceLock::new();
+    RE.get_or_init(|| Regex::new(r"[A-Za-z0-9+/]{24,}={0,2}").expect("base64"))
+}
+
+fn inline_write_intent() -> &'static Regex {
+    static RE: OnceLock<Regex> = OnceLock::new();
+    RE.get_or_init(|| {
+        Regex::new(r"(?i)\b(?:eval|python3?|node|ruby|perl|php)\b[^\n]*(?:\bwrite(?:File(?:Sync)?|_text)?\b|\bopen\s*\(|>)")
+            .expect("inline write")
+    })
 }
 
 fn hook_off() -> &'static Regex {
@@ -51,6 +67,13 @@ fn force_push() -> &'static Regex {
 fn main_branch() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
     RE.get_or_init(|| Regex::new(r"\bmain\b").expect("main"))
+}
+
+fn hash_object_write() -> &'static Regex {
+    static RE: OnceLock<Regex> = OnceLock::new();
+    RE.get_or_init(|| {
+        Regex::new(r"(?i)\bgit\s+hash-object\b[^\n]*\s-w(?:\s|$)").expect("hash-object")
+    })
 }
 
 fn env_assign() -> &'static Regex {
@@ -251,7 +274,8 @@ fn command_targets(words: &[String]) -> Vec<String> {
         return dd_targets(arguments);
     }
     if command == "bash" || command == "sh" || command == "zsh" {
-        if let Some(command_argument_index) = arguments.iter().position(|argument| argument == "-c") {
+        if let Some(command_argument_index) = arguments.iter().position(|argument| argument == "-c")
+        {
             if let Some(nested) = arguments.get(command_argument_index + 1) {
                 return extract_bash_target_paths(nested);
             }
@@ -297,6 +321,20 @@ fn secret_path_mention(value: &str) -> Option<String> {
         .find(|part| secret_paths().is_match(part))
 }
 
+fn contains_encoded_secret(value: &str) -> bool {
+    base64_parts().find_iter(value).any(|part| {
+        BASE64_STANDARD
+            .decode(part.as_str())
+            .ok()
+            .and_then(|bytes| String::from_utf8(bytes).ok())
+            .is_some_and(|decoded| {
+                secret_patterns()
+                    .iter()
+                    .any(|pattern| pattern.is_match(&decoded))
+            })
+    })
+}
+
 pub fn admit_command(kind: &str, text: &str, target_paths: &[String]) -> Decision {
     if kind == "bash" && hook_off().is_match(text) {
         return Decision {
@@ -310,6 +348,12 @@ pub fn admit_command(kind: &str, text: &str, target_paths: &[String]) -> Decisio
             reason: "git push --force to main is not allowed".to_string(),
         };
     }
+    if kind == "bash" && hash_object_write().is_match(text) {
+        return Decision {
+            allow: false,
+            reason: "git hash-object object writes are not allowed".to_string(),
+        };
+    }
     for target_path in target_paths {
         if secret_paths().is_match(target_path) {
             return Decision {
@@ -319,18 +363,16 @@ pub fn admit_command(kind: &str, text: &str, target_paths: &[String]) -> Decisio
         }
     }
     if kind == "bash" {
-        let shell_words: Vec<String> = shell_tokens(text)
-            .into_iter()
-            .filter(|token| token.kind == TokenKind::Word)
-            .map(|token| token.value)
-            .collect();
-        let mut candidates = vec![text.to_string()];
-        candidates.extend(shell_words);
-        if let Some(secret_path) = candidates.iter().find_map(|value| secret_path_mention(value)) {
-            return Decision {
-                allow: false,
-                reason: format!("refuse to write secret-shaped path {secret_path}"),
-            };
+        let has_output_redirect = shell_tokens(text)
+            .iter()
+            .any(|token| token.kind == TokenKind::Redirect && token.value.starts_with('>'));
+        if has_output_redirect || inline_write_intent().is_match(text) {
+            if let Some(secret_path) = secret_path_mention(text) {
+                return Decision {
+                    allow: false,
+                    reason: format!("refuse to write secret-shaped path {secret_path}"),
+                };
+            }
         }
     }
     let hay = format!("{}\n{text}", target_paths.join("\n"));
@@ -341,6 +383,12 @@ pub fn admit_command(kind: &str, text: &str, target_paths: &[String]) -> Decisio
                 reason: format!("secret-shaped token in {kind} payload"),
             };
         }
+    }
+    if contains_encoded_secret(&hay) {
+        return Decision {
+            allow: false,
+            reason: format!("encoded secret-shaped token in {kind} payload"),
+        };
     }
     Decision {
         allow: true,

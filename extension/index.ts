@@ -1,5 +1,7 @@
 import { appendFile } from "node:fs/promises";
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { homedir } from "node:os";
+import path from "node:path";
+import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { loadAdmit, type AdmitLoadResult } from "./load.ts";
 
 const DEFAULT_RECEIPTS_PATH = "/tmp/admit-receipts.jsonl";
@@ -10,21 +12,54 @@ let cachedLoad: Promise<AdmitLoadResult> | undefined;
 
 type ToolInput = Record<string, unknown>;
 type Decision = { allow: boolean; reason: string };
+type ReceiptIdentity = {
+  piSessionId: string | null;
+  terrariumRunId: string | null;
+  terrariumParentRunId: string | null;
+  cwd: string;
+};
 
 function getLoad(): Promise<AdmitLoadResult> {
   cachedLoad ??= loadAdmit();
   return cachedLoad;
 }
 
-async function appendReceipt(tool: string, decision: Decision): Promise<void> {
-  const receiptPath = process.env.ADMIT_RECEIPTS || DEFAULT_RECEIPTS_PATH;
+export function resolveReceiptPath(env: NodeJS.ProcessEnv = process.env): string {
+  if (env.ADMIT_RECEIPTS) return env.ADMIT_RECEIPTS;
+  if (!env.TERRARIUM_RUN_ID) return DEFAULT_RECEIPTS_PATH;
+  const runId = env.TERRARIUM_RUN_ID.replace(/[^A-Za-z0-9_-]/g, "_");
+  const terrariumHome = env.TERRARIUM_HOME || path.join(homedir(), ".terrarium");
+  return path.join(terrariumHome, "runs", `${runId}.admit.jsonl`);
+}
+
+function receiptIdentity(ctx?: ExtensionContext): ReceiptIdentity {
+  return {
+    piSessionId: ctx?.sessionManager.getSessionId() ?? process.env.PI_SESSION_ID ?? null,
+    terrariumRunId: process.env.TERRARIUM_RUN_ID || null,
+    terrariumParentRunId: process.env.TERRARIUM_PARENT_RUN_ID || null,
+    cwd: ctx?.cwd ?? process.cwd(),
+  };
+}
+
+export async function appendReceipt(
+  tool: string,
+  decision: Decision,
+  identity: ReceiptIdentity = receiptIdentity(),
+): Promise<void> {
+  const receiptPath = resolveReceiptPath();
   const receipt = {
+    schemaVersion: 1,
+    ...identity,
     tool,
     allow: decision.allow,
     reason: decision.reason,
     at: new Date().toISOString(),
   };
-  await appendFile(receiptPath, `${JSON.stringify(receipt)}\n`, "utf8");
+  try {
+    await appendFile(receiptPath, `${JSON.stringify(receipt)}\n`, "utf8");
+  } catch {
+    return;
+  }
 }
 
 function decide(admit: (action: unknown) => Decision, tool: string, input: ToolInput): Decision {
@@ -46,21 +81,22 @@ function decide(admit: (action: unknown) => Decision, tool: string, input: ToolI
 }
 
 export default function (pi: ExtensionAPI): void {
-  pi.on("tool_call", async (event) => {
+  pi.on("tool_call", async (event, ctx) => {
     const loaded = await getLoad();
+    const identity = receiptIdentity(ctx);
     if (!loaded.ok) {
       const decision = { allow: false, reason: MISSING_REASON };
-      await appendReceipt(event.toolName, decision);
+      await appendReceipt(event.toolName, decision, identity);
       return { block: true, reason: decision.reason };
     }
 
     if (!GATED_TOOLS.has(event.toolName)) {
-      await appendReceipt(event.toolName, { allow: true, reason: "tool allowed" });
+      await appendReceipt(event.toolName, { allow: true, reason: "tool allowed" }, identity);
       return undefined;
     }
 
     const decision = decide(loaded.admit, event.toolName, event.input as ToolInput);
-    await appendReceipt(event.toolName, decision);
+    await appendReceipt(event.toolName, decision, identity);
     if (!decision.allow) {
       return { block: true, reason: decision.reason };
     }

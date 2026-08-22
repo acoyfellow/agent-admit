@@ -9,6 +9,7 @@
     "check": "tsc --noEmit",
     "test": "node --experimental-strip-types --test src/*.test.ts extension/*.test.ts",
     "admit": "node --experimental-strip-types src/cli.ts",
+    "install:pi": "sh scripts/install.sh",
     "test:rust": "cargo test --manifest-path Cargo.toml",
     "eval": "sh scripts/eval.sh"
   },

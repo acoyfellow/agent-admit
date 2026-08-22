@@ -1,0 +1,1 @@
+{"$schema":"https://json.schemastore.org/sarif-2.1.0.json","version":"2.1.0","runs":[{"tool":{"driver":{"name":"mutant","informationUri":"https://github.com/acoyfellow/mutant","semanticVersion":"0.0.1","rules":[]}},"results":[]}]}

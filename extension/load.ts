@@ -14,7 +14,10 @@ function errorReason(error: unknown): string {
 
 function defaultWasmPath(): string {
   const here = path.dirname(fileURLToPath(import.meta.url));
-  return path.resolve(here, "../target/wasm32-unknown-unknown/release/admit.wasm");
+  const installed = path.resolve(here, "admit.wasm");
+  return existsSync(installed)
+    ? installed
+    : path.resolve(here, "../target/wasm32-unknown-unknown/release/admit.wasm");
 }
 
 export function resolveWasmPath(override = process.env.ADMIT_WASM): string {

@@ -1,0 +1,39 @@
+{
+  "whatItDoes": "Agent-admit denies all documented bypasses, preserves policy decisions when receipt persistence fails, installs a self-contained Pi extension, and writes one attributable receipt stream for each local Terrarium run.",
+  "oneFact": "A real isolated Pi child must allow an ordinary write, deny a protected write, and record both decisions with one matching Terrarium run, Pi session, and working directory.",
+  "proofLevel": 5,
+  "proofCommand": "cd /Users/jcoeyman/cloudflare/agent-admit && ./outputs/verify-terrarium-receipt.sh && ./outputs/prove-global-install.sh",
+  "proofExit": 0,
+  "proofStdout": "run=ter_20260822141045943_rw81l0\nallowed-write=present\ndenied-write=present\nmixed-attribution=rejected\nexternal-proof=proved\ninstalled-link=ok\nnormal-write=allowed\nnormal-bash=allowed\nsecret-path=denied",
+  "safe": true,
+  "risks": [
+    {
+      "how": "A missing or corrupt installed WASM kernel intentionally fails closed before tool classification.",
+      "where": "extension/index.ts",
+      "likely": "low",
+      "cost": "All Pi tool calls stop until agent-admit is reinstalled or disabled."
+    },
+    {
+      "how": "Receipt persistence is best effort, so disk or permission failures can leave no audit line even though the policy decision still executes.",
+      "where": "extension/index.ts",
+      "likely": "low",
+      "cost": "Audit evidence for affected tool calls is lost without changing allow or deny behavior."
+    },
+    {
+      "how": "Non-Pi children, remote children without the extension, and Terrarium taskProof commands execute outside agent-admit.",
+      "where": "README.md",
+      "likely": "medium",
+      "cost": "Those execution paths do not produce agent-admit decisions or receipts."
+    }
+  ],
+  "cleared": [
+    "TypeScript, native Rust, and WASM agree on all 38 corpus cases.",
+    "All five documented bypass cases are denied.",
+    "Mutant killed all 79 generated decision-logic mutants with no survivors, timeouts, or errors.",
+    "An isolated Terrarium child produced one attributed allow and one attributed deny.",
+    "The verifier rejects mixed Terrarium run attribution.",
+    "Terrarium ran the external proof in the retained isolated working directory.",
+    "The installed extension is self-contained and matches the tested artifacts."
+  ],
+  "beforeMerge": "Run the Terrarium task-proof test, the agent-admit check, test, Rust test, eval, mutation receipt verifier, installer, Terrarium receipt verifier, and headless global proof."
+}

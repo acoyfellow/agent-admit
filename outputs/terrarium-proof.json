@@ -1,0 +1,8 @@
+{
+  "runId": "ter_20260822141045943_rw81l0",
+  "status": "done",
+  "taskContractStatus": "verified",
+  "taskProofStatus": "proved",
+  "isolation": "copy",
+  "expectedDecisions": ["allow", "deny"]
+}

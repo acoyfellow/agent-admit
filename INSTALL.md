@@ -22,9 +22,10 @@ pi -e ./extension/index.ts
 ## Pi, every session
 
 ```sh
-mkdir -p ~/.pi/agent/extensions
-ln -sfn "$(pwd)/extension" ~/.pi/agent/extensions/admit
+npm run install:pi
 ```
+
+This builds the WASM kernel and installs a self-contained extension under `~/.pi/agent/extensions/admit`. The installed extension does not depend on the checkout remaining in place.
 
 Start a new Pi session, or run `/reload`.
 
@@ -54,8 +55,28 @@ cargo run --quiet -- write ./.env FOO=1
 
 ## Receipts
 
+Set a fixed receipt path when you run Pi directly:
+
 ```sh
 export ADMIT_RECEIPTS=/tmp/admit-receipts.jsonl
 ```
 
-Each tool call appends one JSON line.
+A local Terrarium child uses its run ID when `ADMIT_RECEIPTS` is not set:
+
+```text
+~/.terrarium/runs/<run-id>.admit.jsonl
+```
+
+Each JSON line contains these fields:
+
+- `schemaVersion`
+- `piSessionId`
+- `terrariumRunId`
+- `terrariumParentRunId`
+- `cwd`
+- `tool`
+- `allow`
+- `reason`
+- `at`
+
+Receipt persistence is best effort. A persistence failure does not change the policy decision.

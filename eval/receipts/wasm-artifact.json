@@ -2,21 +2,21 @@
   "id": "wasm-artifact",
   "kind": "mechanical-gate",
   "claim": "The wasm module decides every corpus case with the same allow and reason as native Rust.",
-  "verified": "wasm decided 29 cases (1738709 bytes). allow and reason matched native Rust.",
+  "verified": "wasm decided 38 cases (1746659 bytes). allow and reason matched native Rust.",
   "projected": "A host can evaluate the same kernel without spawning a native binary.",
   "realized": "",
   "ok": true,
   "wasm": {
     "ok": true,
     "reason": "decided",
-    "bytes": 1738709,
+    "bytes": 1746659,
     "exports": [
       "memory",
       "admit_alloc",
       "admit_free",
       "admit_json"
     ],
-    "decided": 29,
+    "decided": 38,
     "failed": 0,
     "rows": [
       {
@@ -66,6 +66,69 @@
       },
       {
         "name": "ordinary-redirect",
+        "expect": true,
+        "wasmAllow": true,
+        "wasmReason": "bash allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "benign-base64",
+        "expect": true,
+        "wasmAllow": true,
+        "wasmReason": "write allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "hash-object-read",
+        "expect": true,
+        "wasmAllow": true,
+        "wasmReason": "bash allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "force-push-feature",
+        "expect": true,
+        "wasmAllow": true,
+        "wasmReason": "bash allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "search-process-env",
+        "expect": true,
+        "wasmAllow": true,
+        "wasmReason": "bash allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "search-env-path",
+        "expect": true,
+        "wasmAllow": true,
+        "wasmReason": "bash allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "read-env-path",
+        "expect": true,
+        "wasmAllow": true,
+        "wasmReason": "bash allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "input-redirect-env-path",
         "expect": true,
         "wasmAllow": true,
         "wasmReason": "bash allowed",
@@ -272,6 +335,24 @@
         "rustMatch": true
       },
       {
+        "name": "hash-object-write",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "git hash-object object writes are not allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "encoded-sk-token",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "encoded secret-shaped token in write payload",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
         "name": "lockfile-corp",
         "expect": false,
         "wasmAllow": false,
@@ -282,5 +363,5 @@
       }
     ]
   },
-  "at": "2026-08-16T15:53:42.359Z"
+  "at": "2026-08-22T14:12:29.459Z"
 }

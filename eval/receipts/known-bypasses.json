@@ -1,15 +1,15 @@
 {
   "id": "known-bypasses",
-  "kind": "verified-disproved",
-  "claim": "Pre-expansion shell inspection does not catch every write path.",
-  "verified": "5 documented holes were replayed. Extra-credit denies: 3.",
-  "projected": "tree-sitter bash or a real sandbox closes these without changing admit()'s API.",
+  "kind": "mechanical-gate",
+  "claim": "Every documented bypass is denied by both TypeScript and Rust.",
+  "verified": "5 documented bypasses were denied by both implementations.",
+  "projected": "New bypass cases become mandatory regression gates when added to the corpus.",
   "realized": "",
   "ok": true,
   "rows": [
     {
       "name": "eval-redirect",
-      "claimed": false,
+      "claimed": true,
       "tsAllow": false,
       "rustAllow": false,
       "tsReason": "refuse to write secret-shaped path ./.env",
@@ -18,7 +18,7 @@
     },
     {
       "name": "variable-indirection",
-      "claimed": false,
+      "claimed": true,
       "tsAllow": false,
       "rustAllow": false,
       "tsReason": "refuse to write secret-shaped path ./.env",
@@ -27,16 +27,16 @@
     },
     {
       "name": "hash-object-plumbing",
-      "claimed": false,
-      "tsAllow": true,
-      "rustAllow": true,
-      "tsReason": "bash allowed",
-      "rustReason": "bash allowed",
-      "extraCredit": false
+      "claimed": true,
+      "tsAllow": false,
+      "rustAllow": false,
+      "tsReason": "git hash-object object writes are not allowed",
+      "rustReason": "git hash-object object writes are not allowed",
+      "extraCredit": true
     },
     {
       "name": "base64-payload",
-      "claimed": false,
+      "claimed": true,
       "tsAllow": false,
       "rustAllow": false,
       "tsReason": "refuse to write secret-shaped path ./.env",
@@ -45,13 +45,13 @@
     },
     {
       "name": "python-bytes-token",
-      "claimed": false,
-      "tsAllow": true,
-      "rustAllow": true,
-      "tsReason": "write allowed",
-      "rustReason": "write allowed",
-      "extraCredit": false
+      "claimed": true,
+      "tsAllow": false,
+      "rustAllow": false,
+      "tsReason": "encoded secret-shaped token in write payload",
+      "rustReason": "encoded secret-shaped token in write payload",
+      "extraCredit": true
     }
   ],
-  "at": "2026-08-16T15:53:42.359Z"
+  "at": "2026-08-22T14:12:29.459Z"
 }

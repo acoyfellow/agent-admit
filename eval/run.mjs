@@ -252,14 +252,19 @@ const wasmReceipt = {
   wasm,
   at: started,
 };
+const bypassFailures = bypassRows.filter(
+  (row) => row.claimed && (row.tsAllow || row.rustAllow),
+);
 const bypassReceipt = {
   id: "known-bypasses",
-  kind: "verified-disproved",
-  claim: "Pre-expansion shell inspection does not catch every write path.",
-  verified: `${bypassRows.length} documented holes were replayed. Extra-credit denies: ${bypassRows.filter((row) => row.extraCredit).length}.`,
-  projected: "tree-sitter bash or a real sandbox closes these without changing admit()'s API.",
+  kind: "mechanical-gate",
+  claim: "Every documented bypass is denied by both TypeScript and Rust.",
+  verified: bypassFailures.length === 0
+    ? `${bypassRows.length} documented bypasses were denied by both implementations.`
+    : "",
+  projected: "New bypass cases become mandatory regression gates when added to the corpus.",
   realized: "",
-  ok: true,
+  ok: bypassFailures.length === 0,
   rows: bypassRows,
   at: started,
 };
@@ -278,8 +283,9 @@ const summary = {
   wasm: { ok: wasmReceipt.ok, bytes: wasm.bytes, decided: wasm.decided, failed: wasm.failed, reason: wasm.reason },
   bypasses: {
     ok: bypassReceipt.ok,
-    holes: bypassRows.length,
-    extraCreditDenies: bypassRows.filter((row) => row.extraCredit).length,
+    cases: bypassRows.length,
+    failed: bypassFailures.length,
+    denied: bypassRows.filter((row) => row.extraCredit).length,
   },
   dests,
 };

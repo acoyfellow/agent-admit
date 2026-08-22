@@ -11,6 +11,13 @@
     { "name": "ordinary-edit", "expect": true, "reasonContains": "allowed", "action": { "kind": "edit", "path": "src/output.ts", "payload": "export const x = 1" } },
     { "name": "ordinary-tee", "expect": true, "reasonContains": "allowed", "action": { "kind": "bash", "command": "tee build.log" } },
     { "name": "ordinary-redirect", "expect": true, "reasonContains": "allowed", "action": { "kind": "bash", "command": "echo hello > output.txt" } },
+    { "name": "benign-base64", "expect": true, "reasonContains": "allowed", "action": { "kind": "write", "path": "src/fixture.ts", "content": "Buffer.from('b3JkaW5hcnkgY29uZmlndXJhdGlvbiBwYXlsb2Fk','base64')" } },
+    { "name": "hash-object-read", "expect": true, "reasonContains": "allowed", "action": { "kind": "bash", "command": "git hash-object --stdin" } },
+    { "name": "force-push-feature", "expect": true, "reasonContains": "allowed", "action": { "kind": "bash", "command": "git push --force origin feature" } },
+    { "name": "search-process-env", "expect": true, "reasonContains": "allowed", "action": { "kind": "bash", "command": "rg -n 'process\\.env' src" } },
+    { "name": "search-env-path", "expect": true, "reasonContains": "allowed", "action": { "kind": "bash", "command": "rg -n '\\.env' ." } },
+    { "name": "read-env-path", "expect": true, "reasonContains": "allowed", "action": { "kind": "bash", "command": "cat .env" } },
+    { "name": "input-redirect-env-path", "expect": true, "reasonContains": "allowed", "action": { "kind": "bash", "command": "cat < .env" } },
     { "name": "lockfile-npm-uppercase", "expect": true, "reasonContains": "lockfile allowed", "action": { "kind": "lockfile", "text": "\"HTTPS://REGISTRY.NPMJS.ORG/a/-/a-1.0.0.tgz\"", "policyJson": "__POLICY__" } },
     { "name": "commit-no-verify", "expect": false, "reasonContains": "hooks disabled", "action": { "kind": "bash", "command": "git commit --no-verify -m x" } },
     { "name": "force-push-main", "expect": false, "reasonContains": "force", "action": { "kind": "bash", "command": "git push --force origin main" } },
@@ -33,6 +40,8 @@
     { "name": "node-write-env", "expect": false, "reasonContains": "secret-shaped path", "action": { "kind": "bash", "command": "node -e \"require('fs').writeFileSync('.env','x')\"" } },
     { "name": "sk-token", "expect": false, "reasonContains": "secret-shaped token", "action": { "kind": "write", "path": "src/a.ts", "content": "const k=\"sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxx\"" } },
     { "name": "eval-redirect", "expect": false, "reasonContains": "secret-shaped path", "action": { "kind": "bash", "command": "eval \"echo FOO=1 > ./.env\"" } },
+    { "name": "hash-object-write", "expect": false, "reasonContains": "hash-object", "action": { "kind": "bash", "command": "git hash-object -w --stdin" } },
+    { "name": "encoded-sk-token", "expect": false, "reasonContains": "encoded secret-shaped token", "action": { "kind": "write", "path": "src/a.ts", "content": "const k = Buffer.from('c2steHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4','base64').toString()" } },
     { "name": "lockfile-corp", "expect": false, "reasonContains": "not on the public list", "action": { "kind": "lockfile", "text": "\"HTTPS://NPM.CORP.ACME.EXAMPLE/foo/-/foo-1.0.0.tgz\"", "policyJson": "__POLICY__" } }
   ]
 }

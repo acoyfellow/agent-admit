@@ -6,6 +6,7 @@ version = 4
 name = "admit"
 version = "0.0.1"
 dependencies = [
+ "base64",
  "regex",
  "serde",
  "serde_json",
@@ -21,6 +22,12 @@ checksum = "c982642fa9e8606056828ee9a8505737230110bb1099153c79efe865c59d12ba"
 dependencies = [
  "memchr",
 ]
+
+[[package]]
+name = "base64"
+version = "0.22.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
 
 [[package]]
 name = "block-buffer"

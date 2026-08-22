@@ -252,6 +252,25 @@ fn rejects_secret_shaped_token_in_write() {
 }
 
 #[test]
+fn rejects_base64_encoded_secret() {
+    let decision = admit(Action::Write {
+        path: "src/a.ts".to_string(),
+        content: "Buffer.from('c2steHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4','base64')".to_string(),
+    });
+    assert!(!decision.allow);
+    assert!(decision.reason.contains("encoded secret-shaped token"));
+}
+
+#[test]
+fn rejects_git_hash_object_write() {
+    let decision = admit(Action::Bash {
+        command: "git hash-object -w --stdin".to_string(),
+    });
+    assert!(!decision.allow);
+    assert!(decision.reason.contains("hash-object"));
+}
+
+#[test]
 fn rejects_uppercase_private_registry_url() {
     let decision = admit(Action::Lockfile {
         text: format!("\"{}://NPM.CORP.ACME.EXAMPLE/foo/-/foo-1.0.0.tgz\"", "HTTPS"),

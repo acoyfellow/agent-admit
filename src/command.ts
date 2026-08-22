@@ -14,6 +14,8 @@ const SECRET_PATTERNS = [
 
 const SECRET_PATHS = /(^|\/)(\.env(\.[^/]+)?|\.dev\.vars(\.[^/]+)?|\.npmrc)$/i;
 const PATH_SHAPED_PARTS = /[A-Za-z0-9_./~-]+/g;
+const BASE64_PARTS = /[A-Za-z0-9+/]{24,}={0,2}/g;
+const INLINE_WRITE_INTENT = /\b(?:eval|python3?|node|ruby|perl|php)\b[^\n]*(?:\bwrite(?:File(?:Sync)?|_text)?\b|\bopen\s*\(|>)/i;
 
 type ShellToken = {
   kind: "word" | "redirect" | "separator";
@@ -227,6 +229,13 @@ function secretPathMention(value: string): string | undefined {
   return pathShapedParts.find((part) => SECRET_PATHS.test(part));
 }
 
+function containsEncodedSecret(value: string): boolean {
+  return (value.match(BASE64_PARTS) ?? []).some((part) => {
+    const decoded = Buffer.from(part, "base64").toString("utf8");
+    return SECRET_PATTERNS.some((pattern) => pattern.test(decoded));
+  });
+}
+
 export function admitCommand(input: CommandInput): { allow: boolean; reason: string } {
   if (input.kind === "bash" && /\bgit\s+commit\b[^\n]*--no-verify\b/i.test(input.text)) {
     return { allow: false, reason: "git commit with hooks disabled is not allowed" };
@@ -238,20 +247,23 @@ export function admitCommand(input: CommandInput): { allow: boolean; reason: str
   ) {
     return { allow: false, reason: "git push --force to main is not allowed" };
   }
+  if (input.kind === "bash" && /\bgit\s+hash-object\b[^\n]*\s-w(?:\s|$)/i.test(input.text)) {
+    return { allow: false, reason: "git hash-object object writes are not allowed" };
+  }
   for (const targetPath of input.targetPaths) {
     if (SECRET_PATHS.test(targetPath)) {
       return { allow: false, reason: `refuse to write secret-shaped path ${targetPath}` };
     }
   }
   if (input.kind === "bash") {
-    const shellWords = shellTokens(input.text)
-      .filter((token) => token.kind === "word")
-      .map((token) => token.value);
-    const secretPath = [input.text, ...shellWords]
-      .map(secretPathMention)
-      .find((path) => path !== undefined);
-    if (secretPath) {
-      return { allow: false, reason: `refuse to write secret-shaped path ${secretPath}` };
+    const hasOutputRedirect = shellTokens(input.text).some(
+      (token) => token.kind === "redirect" && token.value.startsWith(">"),
+    );
+    if (hasOutputRedirect || INLINE_WRITE_INTENT.test(input.text)) {
+      const secretPath = secretPathMention(input.text);
+      if (secretPath) {
+        return { allow: false, reason: `refuse to write secret-shaped path ${secretPath}` };
+      }
     }
   }
   const hay = `${input.targetPaths.join("\n")}\n${input.text}`;
@@ -259,6 +271,9 @@ export function admitCommand(input: CommandInput): { allow: boolean; reason: str
     if (pattern.test(hay)) {
       return { allow: false, reason: `secret-shaped token in ${input.kind} payload` };
     }
+  }
+  if (containsEncodedSecret(hay)) {
+    return { allow: false, reason: `encoded secret-shaped token in ${input.kind} payload` };
   }
   return { allow: true, reason: `${input.kind} allowed` };
 }
