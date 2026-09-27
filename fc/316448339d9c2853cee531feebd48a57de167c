@@ -1,0 +1,41 @@
+crates/admit/src/command.rs
+  s_bddf4eb8848d16::t_77bb0a0d0945b5 328-466,474-480
+eval/corpus.json
+  s_bddf4eb8848d16::t_9ccc0c88a91e50 45-64
+eval/receipts/known-bypasses.json
+  s_bddf4eb8848d16::t_2f17fb75094f57 56
+eval/receipts/lockstep-negative-control.json
+  s_bddf4eb8848d16::t_962f9e82fbc627 5,8-10,470-697,700
+eval/receipts/mute-fail-closed.json
+  s_bddf4eb8848d16::t_2af902114ccdaa 16
+eval/receipts/wasm-artifact.json
+  s_bddf4eb8848d16::t_d89995a88253f0 5,12,19,363-533,537
+src/admit.test.ts
+  s_4f3d73861137de::t_b12309be5cf3cb 231-275
+src/command.ts
+  s_bddf4eb8848d16::t_0110ea285ce596 239-357,362-364
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "fc316448339d9c2853cee531feebd48a57de167c",
+  "prompts": {},
+  "sessions": {
+    "s_4f3d73861137de": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "019febf7-4b34-7b21-970a-5f277fcc20a8",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Jordan Coeyman <jcoeyman@cloudflare.com>"
+    },
+    "s_bddf4eb8848d16": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0de5b-f971-75f6-97ad-8153da509084",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Jordan Coeyman <jcoeyman@cloudflare.com>"
+    }
+  }
+}
