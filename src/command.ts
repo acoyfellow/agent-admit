@@ -236,16 +236,132 @@ function containsEncodedSecret(value: string): boolean {
   });
 }
 
+const PROTECTED_BRANCHES = new Set(["main", "master"]);
+const GIT_OPTIONS_WITH_VALUE = new Set(["-C", "-c", "--git-dir", "--work-tree", "--namespace", "--exec-path"]);
+const PUSH_OPTIONS_WITH_VALUE = new Set(["-o", "--push-option", "--repo", "--receive-pack", "--exec"]);
+const FORCE_TO_PROTECTED_REASON = "git push --force to main is not allowed";
+const FORCE_WITHOUT_TARGET_REASON = "git force push must name its branch";
+
+type PushIntent = { force: boolean; everyBranch: boolean; refspecs: string[] };
+
+function simpleCommands(command: string): string[][] {
+  const commands: string[][] = [];
+  let words: string[] = [];
+  for (const token of shellTokens(command)) {
+    if (token.kind === "separator") {
+      commands.push(words);
+      words = [];
+    } else if (token.kind === "word") {
+      words.push(token.value);
+    }
+  }
+  commands.push(words);
+  return commands.filter((entry) => entry.length > 0);
+}
+
+function gitSubcommandIndex(words: string[]): number {
+  const gitIndex = commandIndexAfterEnv(words);
+  if (gitIndex === -1 || words[gitIndex]?.split("/").at(-1) !== "git") {
+    return -1;
+  }
+  let index = gitIndex + 1;
+  while (index < words.length) {
+    const word = words[index];
+    if (GIT_OPTIONS_WITH_VALUE.has(word)) {
+      index += 2;
+    } else if (word.startsWith("-")) {
+      index += 1;
+    } else {
+      return index;
+    }
+  }
+  return -1;
+}
+
+function isForceFlag(word: string): boolean {
+  return (
+    word === "--force" ||
+    word.startsWith("--force-with-lease") ||
+    (word.startsWith("-") && !word.startsWith("--") && word.slice(1).includes("f"))
+  );
+}
+
+function pushIntent(arguments_: string[]): PushIntent {
+  const intent: PushIntent = { force: false, everyBranch: false, refspecs: [] };
+  const positionals: string[] = [];
+  let index = 0;
+  while (index < arguments_.length) {
+    const word = arguments_[index];
+    if (PUSH_OPTIONS_WITH_VALUE.has(word)) {
+      index += 2;
+      continue;
+    }
+    if (word === "--all" || word === "--mirror" || word === "--branches") {
+      intent.everyBranch = true;
+    } else if (isForceFlag(word)) {
+      intent.force = true;
+    } else if (!word.startsWith("-")) {
+      positionals.push(word);
+    }
+    index += 1;
+  }
+  for (const refspec of positionals.slice(1)) {
+    if (refspec.startsWith("+")) {
+      intent.force = true;
+    }
+    intent.refspecs.push(refspec.replace(/^\++/, ""));
+  }
+  return intent;
+}
+
+function refspecTargetsProtectedBranch(refspec: string): boolean {
+  const destination = refspec.split(":").at(-1) ?? refspec;
+  const branch = destination.startsWith("refs/heads/") ? destination.slice("refs/heads/".length) : destination;
+  return branch.includes("*") || PROTECTED_BRANCHES.has(branch);
+}
+
+function nestedShellCommand(words: string[]): string | undefined {
+  const index = commandIndexAfterEnv(words);
+  const shell = index === -1 ? undefined : words[index]?.split("/").at(-1);
+  if (shell !== "bash" && shell !== "sh" && shell !== "zsh") {
+    return undefined;
+  }
+  const flag = words.slice(index + 1).indexOf("-c");
+  return flag === -1 ? undefined : words[index + 1 + flag + 1];
+}
+
+function forcePushDenial(command: string): string | undefined {
+  for (const words of simpleCommands(command)) {
+    const nested = nestedShellCommand(words);
+    const nestedReason = nested === undefined ? undefined : forcePushDenial(nested);
+    if (nestedReason) {
+      return nestedReason;
+    }
+    const subcommand = gitSubcommandIndex(words);
+    if (subcommand === -1 || words[subcommand] !== "push") {
+      continue;
+    }
+    const intent = pushIntent(words.slice(subcommand + 1));
+    if (!intent.force) {
+      continue;
+    }
+    if (intent.everyBranch || intent.refspecs.some(refspecTargetsProtectedBranch)) {
+      return FORCE_TO_PROTECTED_REASON;
+    }
+    if (intent.refspecs.length === 0) {
+      return FORCE_WITHOUT_TARGET_REASON;
+    }
+  }
+  return undefined;
+}
+
 export function admitCommand(input: CommandInput): { allow: boolean; reason: string } {
   if (input.kind === "bash" && /\bgit\s+commit\b[^\n]*--no-verify\b/i.test(input.text)) {
     return { allow: false, reason: "git commit with hooks disabled is not allowed" };
   }
-  if (
-    input.kind === "bash" &&
-    /\bgit\s+push\b[^\n]*--force\b/i.test(input.text) &&
-    /\bmain\b/.test(input.text)
-  ) {
-    return { allow: false, reason: "git push --force to main is not allowed" };
+  const forceReason = input.kind === "bash" ? forcePushDenial(input.text) : undefined;
+  if (forceReason) {
+    return { allow: false, reason: forceReason };
   }
   if (input.kind === "bash" && /\bgit\s+hash-object\b[^\n]*\s-w(?:\s|$)/i.test(input.text)) {
     return { allow: false, reason: "git hash-object object writes are not allowed" };

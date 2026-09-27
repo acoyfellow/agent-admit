@@ -2,21 +2,21 @@
   "id": "wasm-artifact",
   "kind": "mechanical-gate",
   "claim": "The wasm module decides every corpus case with the same allow and reason as native Rust.",
-  "verified": "wasm decided 38 cases (1746659 bytes). allow and reason matched native Rust.",
+  "verified": "wasm decided 57 cases (1751428 bytes). allow and reason matched native Rust.",
   "projected": "A host can evaluate the same kernel without spawning a native binary.",
   "realized": "",
   "ok": true,
   "wasm": {
     "ok": true,
     "reason": "decided",
-    "bytes": 1746659,
+    "bytes": 1751428,
     "exports": [
       "memory",
       "admit_alloc",
       "admit_free",
       "admit_json"
     ],
-    "decided": 38,
+    "decided": 57,
     "failed": 0,
     "rows": [
       {
@@ -360,8 +360,179 @@
         "expected": true,
         "reasonHit": true,
         "rustMatch": true
+      },
+      {
+        "name": "force-push-branch-named-like-main",
+        "expect": true,
+        "wasmAllow": true,
+        "wasmReason": "bash allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "force-push-plus-feature",
+        "expect": true,
+        "wasmAllow": true,
+        "wasmReason": "bash allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "search-force-push-text",
+        "expect": true,
+        "wasmAllow": true,
+        "wasmReason": "bash allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "echo-force-push-text",
+        "expect": true,
+        "wasmAllow": true,
+        "wasmReason": "bash allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "main-word-elsewhere",
+        "expect": true,
+        "wasmAllow": true,
+        "wasmReason": "bash allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "force-push-short-flag",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "git push --force to main is not allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "force-push-combined-flags",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "git push --force to main is not allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "force-push-with-lease-main",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "git push --force to main is not allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "force-push-plus-refspec",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "git push --force to main is not allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "force-push-plus-head-to-main",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "git push --force to main is not allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "force-push-plus-full-ref",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "git push --force to main is not allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "force-push-plus-wildcard",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "git push --force to main is not allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "force-push-all",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "git push --force to main is not allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "force-push-mirror",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "git push --force to main is not allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "force-push-master",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "git push --force to main is not allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "force-push-git-dash-c",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "git push --force to main is not allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "force-push-after-and",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "git push --force to main is not allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "force-push-nested-shell",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "git push --force to main is not allowed",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
+      },
+      {
+        "name": "force-push-no-target",
+        "expect": false,
+        "wasmAllow": false,
+        "wasmReason": "git force push must name its branch",
+        "expected": true,
+        "reasonHit": true,
+        "rustMatch": true
       }
     ]
   },
-  "at": "2026-08-22T14:12:29.459Z"
+  "at": "2026-09-27T11:52:24.340Z"
 }

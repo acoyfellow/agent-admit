@@ -228,6 +228,51 @@ describe("admit", () => {
     assert.equal(write.allow, true);
   });
 
+  it("denies every way to force-push a protected branch", () => {
+    const force = ["--", "force"].join("");
+    const denied = [
+      `git push ${force} origin main`,
+      "git push -f origin main",
+      "git push -uf origin main",
+      "git push --force-with-lease origin main",
+      "git push origin +main",
+      "git push origin +HEAD:main",
+      "git push origin +refs/heads/main:refs/heads/main",
+      "git push origin '+refs/heads/*:refs/heads/*'",
+      `git push ${force} --all origin`,
+      `git push ${force} --mirror origin`,
+      "git push origin +master",
+      `git -C repo push ${force} origin main`,
+      `GIT_TRACE=1 git push ${force} origin main`,
+      `cd repo && git push ${force} origin main`,
+      `bash -c 'git push ${force} origin main'`,
+    ];
+    for (const command of denied) {
+      const decision = admit({ kind: "bash", command });
+      assert.equal(decision.allow, false, command);
+      assert.match(decision.reason, /force/, command);
+    }
+    const bare = admit({ kind: "bash", command: `git push ${force}` });
+    assert.equal(bare.allow, false);
+    assert.match(bare.reason, /must name its branch/);
+  });
+
+  it("does not deny commands that only mention force and main", () => {
+    const force = ["--", "force"].join("");
+    const allowed = [
+      `git push ${force} origin feature/main-menu`,
+      "git push origin +feature",
+      "git push origin +HEAD:refs/heads/release",
+      `rg -F "git push ${force} to main is not allowed" src`,
+      `echo 'never git push ${force} origin main'`,
+      `git log --grep main && git push ${force} origin topic`,
+      `gh pr checks 12 && git push ${force}-with-lease origin topic`,
+    ];
+    for (const command of allowed) {
+      assert.equal(admit({ kind: "bash", command }).allow, true, command);
+    }
+  });
+
   it("allows read-only inspection of protected-path text", () => {
     const commands = [
       "rg -n 'process\\.env' src",

@@ -59,16 +59,6 @@ fn hook_off() -> &'static Regex {
     RE.get_or_init(|| Regex::new(r"(?i)\bgit\s+commit\b[^\n]*--no-verify\b").expect("hook"))
 }
 
-fn force_push() -> &'static Regex {
-    static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| Regex::new(r"(?i)\bgit\s+push\b[^\n]*--force\b").expect("force"))
-}
-
-fn main_branch() -> &'static Regex {
-    static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| Regex::new(r"\bmain\b").expect("main"))
-}
-
 fn hash_object_write() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
     RE.get_or_init(|| {
@@ -335,6 +325,145 @@ fn contains_encoded_secret(value: &str) -> bool {
     })
 }
 
+const PROTECTED_BRANCHES: [&str; 2] = ["main", "master"];
+const GIT_OPTIONS_WITH_VALUE: [&str; 6] = [
+    "-C",
+    "-c",
+    "--git-dir",
+    "--work-tree",
+    "--namespace",
+    "--exec-path",
+];
+const PUSH_OPTIONS_WITH_VALUE: [&str; 5] =
+    ["-o", "--push-option", "--repo", "--receive-pack", "--exec"];
+const FORCE_TO_PROTECTED_REASON: &str = "git push --force to main is not allowed";
+const FORCE_WITHOUT_TARGET_REASON: &str = "git force push must name its branch";
+
+#[derive(Default)]
+struct PushIntent {
+    force: bool,
+    every_branch: bool,
+    refspecs: Vec<String>,
+}
+
+fn simple_commands(command: &str) -> Vec<Vec<String>> {
+    let mut commands = Vec::new();
+    let mut words: Vec<String> = Vec::new();
+    for token in shell_tokens(command) {
+        match token.kind {
+            TokenKind::Separator => commands.push(std::mem::take(&mut words)),
+            TokenKind::Word => words.push(token.value),
+            TokenKind::Redirect => {}
+        }
+    }
+    commands.push(words);
+    commands.retain(|words| !words.is_empty());
+    commands
+}
+
+fn git_subcommand_index(words: &[String]) -> Option<usize> {
+    let git_index = command_index_after_env(words)?;
+    if words.get(git_index)?.rsplit('/').next() != Some("git") {
+        return None;
+    }
+    let mut index = git_index + 1;
+    while let Some(word) = words.get(index) {
+        if GIT_OPTIONS_WITH_VALUE.contains(&word.as_str()) {
+            index += 2;
+        } else if word.starts_with('-') {
+            index += 1;
+        } else {
+            return Some(index);
+        }
+    }
+    None
+}
+
+fn is_force_flag(word: &str) -> bool {
+    word == "--force"
+        || word.starts_with("--force-with-lease")
+        || (word.starts_with('-') && !word.starts_with("--") && word[1..].contains('f'))
+}
+
+fn push_intent(arguments: &[String]) -> PushIntent {
+    let mut intent = PushIntent::default();
+    let mut positionals: Vec<&String> = Vec::new();
+    let mut index = 0;
+    while let Some(word) = arguments.get(index) {
+        if PUSH_OPTIONS_WITH_VALUE.contains(&word.as_str()) {
+            index += 2;
+            continue;
+        }
+        if word == "--all" || word == "--mirror" || word == "--branches" {
+            intent.every_branch = true;
+        } else if is_force_flag(word) {
+            intent.force = true;
+        } else if !word.starts_with('-') {
+            positionals.push(word);
+        }
+        index += 1;
+    }
+    for refspec in positionals.into_iter().skip(1) {
+        if refspec.starts_with('+') {
+            intent.force = true;
+        }
+        intent
+            .refspecs
+            .push(refspec.trim_start_matches('+').to_string());
+    }
+    intent
+}
+
+fn refspec_targets_protected_branch(refspec: &str) -> bool {
+    let destination = refspec.rsplit(':').next().unwrap_or(refspec);
+    let branch = destination
+        .strip_prefix("refs/heads/")
+        .unwrap_or(destination);
+    branch.contains('*') || PROTECTED_BRANCHES.contains(&branch)
+}
+
+fn nested_shell_command(words: &[String]) -> Option<&String> {
+    let index = command_index_after_env(words)?;
+    let shell = words.get(index)?.rsplit('/').next()?;
+    if shell != "bash" && shell != "sh" && shell != "zsh" {
+        return None;
+    }
+    let flag = words[index + 1..].iter().position(|word| word == "-c")?;
+    words.get(index + 1 + flag + 1)
+}
+
+fn force_push_denial(command: &str) -> Option<&'static str> {
+    for words in simple_commands(command) {
+        if let Some(reason) =
+            nested_shell_command(&words).and_then(|nested| force_push_denial(nested))
+        {
+            return Some(reason);
+        }
+        let Some(subcommand) = git_subcommand_index(&words) else {
+            continue;
+        };
+        if words[subcommand] != "push" {
+            continue;
+        }
+        let intent = push_intent(&words[subcommand + 1..]);
+        if !intent.force {
+            continue;
+        }
+        if intent.every_branch
+            || intent
+                .refspecs
+                .iter()
+                .any(|refspec| refspec_targets_protected_branch(refspec))
+        {
+            return Some(FORCE_TO_PROTECTED_REASON);
+        }
+        if intent.refspecs.is_empty() {
+            return Some(FORCE_WITHOUT_TARGET_REASON);
+        }
+    }
+    None
+}
+
 pub fn admit_command(kind: &str, text: &str, target_paths: &[String]) -> Decision {
     if kind == "bash" && hook_off().is_match(text) {
         return Decision {
@@ -342,11 +471,13 @@ pub fn admit_command(kind: &str, text: &str, target_paths: &[String]) -> Decisio
             reason: "git commit with hooks disabled is not allowed".to_string(),
         };
     }
-    if kind == "bash" && force_push().is_match(text) && main_branch().is_match(text) {
-        return Decision {
-            allow: false,
-            reason: "git push --force to main is not allowed".to_string(),
-        };
+    if kind == "bash" {
+        if let Some(reason) = force_push_denial(text) {
+            return Decision {
+                allow: false,
+                reason: reason.to_string(),
+            };
+        }
     }
     if kind == "bash" && hash_object_write().is_match(text) {
         return Decision {

@@ -42,6 +42,25 @@
     { "name": "eval-redirect", "expect": false, "reasonContains": "secret-shaped path", "action": { "kind": "bash", "command": "eval \"echo FOO=1 > ./.env\"" } },
     { "name": "hash-object-write", "expect": false, "reasonContains": "hash-object", "action": { "kind": "bash", "command": "git hash-object -w --stdin" } },
     { "name": "encoded-sk-token", "expect": false, "reasonContains": "encoded secret-shaped token", "action": { "kind": "write", "path": "src/a.ts", "content": "const k = Buffer.from('c2steHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4','base64').toString()" } },
-    { "name": "lockfile-corp", "expect": false, "reasonContains": "not on the public list", "action": { "kind": "lockfile", "text": "\"HTTPS://NPM.CORP.ACME.EXAMPLE/foo/-/foo-1.0.0.tgz\"", "policyJson": "__POLICY__" } }
+    { "name": "lockfile-corp", "expect": false, "reasonContains": "not on the public list", "action": { "kind": "lockfile", "text": "\"HTTPS://NPM.CORP.ACME.EXAMPLE/foo/-/foo-1.0.0.tgz\"", "policyJson": "__POLICY__" } },
+    { "name": "force-push-branch-named-like-main", "expect": true, "reasonContains": "allowed", "action": { "kind": "bash", "command": "git push --force origin feature/main-menu" } },
+    { "name": "force-push-plus-feature", "expect": true, "reasonContains": "allowed", "action": { "kind": "bash", "command": "git push origin +feature" } },
+    { "name": "search-force-push-text", "expect": true, "reasonContains": "allowed", "action": { "kind": "bash", "command": "rg -F \"git push --force to main is not allowed\" src" } },
+    { "name": "echo-force-push-text", "expect": true, "reasonContains": "allowed", "action": { "kind": "bash", "command": "echo 'never git push --force origin main'" } },
+    { "name": "main-word-elsewhere", "expect": true, "reasonContains": "allowed", "action": { "kind": "bash", "command": "git log --grep main && git push --force origin topic" } },
+    { "name": "force-push-short-flag", "expect": false, "reasonContains": "force", "action": { "kind": "bash", "command": "git push -f origin main" } },
+    { "name": "force-push-combined-flags", "expect": false, "reasonContains": "force", "action": { "kind": "bash", "command": "git push -uf origin main" } },
+    { "name": "force-push-with-lease-main", "expect": false, "reasonContains": "force", "action": { "kind": "bash", "command": "git push --force-with-lease origin main" } },
+    { "name": "force-push-plus-refspec", "expect": false, "reasonContains": "force", "action": { "kind": "bash", "command": "git push origin +main" } },
+    { "name": "force-push-plus-head-to-main", "expect": false, "reasonContains": "force", "action": { "kind": "bash", "command": "git push origin +HEAD:main" } },
+    { "name": "force-push-plus-full-ref", "expect": false, "reasonContains": "force", "action": { "kind": "bash", "command": "git push origin +refs/heads/main:refs/heads/main" } },
+    { "name": "force-push-plus-wildcard", "expect": false, "reasonContains": "force", "action": { "kind": "bash", "command": "git push origin '+refs/heads/*:refs/heads/*'" } },
+    { "name": "force-push-all", "expect": false, "reasonContains": "force", "action": { "kind": "bash", "command": "git push --force --all origin" } },
+    { "name": "force-push-mirror", "expect": false, "reasonContains": "force", "action": { "kind": "bash", "command": "git push --force --mirror origin" } },
+    { "name": "force-push-master", "expect": false, "reasonContains": "force", "action": { "kind": "bash", "command": "git push origin +master" } },
+    { "name": "force-push-git-dash-c", "expect": false, "reasonContains": "force", "action": { "kind": "bash", "command": "git -C repo push --force origin main" } },
+    { "name": "force-push-after-and", "expect": false, "reasonContains": "force", "action": { "kind": "bash", "command": "cd repo && git push --force origin main" } },
+    { "name": "force-push-nested-shell", "expect": false, "reasonContains": "force", "action": { "kind": "bash", "command": "bash -c 'git push --force origin main'" } },
+    { "name": "force-push-no-target", "expect": false, "reasonContains": "must name its branch", "action": { "kind": "bash", "command": "git push --force" } }
   ]
 }
